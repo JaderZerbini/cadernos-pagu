@@ -1,0 +1,27 @@
+# Ambiente virtual (NUNCA commitar — pode ter centenas de MB)
+.venv/
+venv/
+env/
+
+# Dados processados (gerados automaticamente pelo app)
+data/processed/
+
+# Cache do Python
+__pycache__/
+*.py[cod]
+*.pyo
+
+# Streamlit cache local
+.streamlit/secrets.toml
+
+# MacOS
+.DS_Store
+
+# Windows
+Thumbs.db
+desktop.ini
+
+# IDEs
+.vscode/
+.idea/
+*.swp
