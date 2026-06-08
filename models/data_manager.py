@@ -331,7 +331,7 @@ class DataManager:
         """
         Mapeia um valor bruto do CSV para o nome exato do GeoJSON.
         Etapas: (1) pega o 1º país se houver múltiplos, (2) normaliza,
-        (3) busca exata, (4) busca parcial, (5) retorna original.
+        (3) rejeita lixo, (4) busca exata, (5) busca parcial, (6) retorna original.
         """
         if pd.isna(valor):
             return "Desconhecido"
@@ -343,13 +343,25 @@ class DataManager:
         )
         chave = _norm(primeiro)
 
+        # ── Rejeitar lixo de dados ────────────────────────────────────────────
+        # Palavras de 1-2 letras ou verbos/artigos em PT que não são países
+        # (ex: "é", "e", "a", "de", "do", "da", "x", "-")
+        palavras_invalidas = {
+            "e", "e", "a", "o", "de", "do", "da", "dos", "das",
+            "em", "no", "na", "por", "com", "sem", "x", "n", "s"
+        }
+        if len(chave) <= 1 or chave in palavras_invalidas:
+            return "Desconhecido"
+
         if chave in MAPA_GEO:
             return MAPA_GEO[chave]
 
         # Busca parcial — ex: "Brasil (SP)" → "brasil"
-        for k, v in MAPA_GEO.items():
-            if chave.startswith(k) or k.startswith(chave):
-                return v
+        # ATENÇÃO: só aplica se a chave tem ≥4 caracteres para evitar falsos positivos
+        if len(chave) >= 4:
+            for k, v in MAPA_GEO.items():
+                if chave.startswith(k) or (len(k) >= 4 and k.startswith(chave)):
+                    return v
 
         # Valor não mapeado — retorna capitalizado para auditoria manual
         return primeiro.title()
