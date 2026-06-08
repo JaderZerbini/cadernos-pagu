@@ -240,7 +240,17 @@ class DataManager:
         df = df.replace(list(ruido), pd.NA)
 
         # Auditoria: remove duplicatas e registros incompletos
-        df = df.drop_duplicates(subset=criticas)
+        # Deduplicação ampla: inclui título para não remover artigos
+        # distintos do mesmo autor no mesmo ano
+        col_tit_dedup = self._col(df, ["TÍTULO", "TITULO", "TITLE", "ARTIGO"])
+        criticas_dedup = criticas + ([col_tit_dedup] if col_tit_dedup else [])
+        df = df.drop_duplicates(subset=criticas_dedup)
+
+        # Limpar \r\n e \n embutidos em células (erro de edição no Excel)
+        for col in df.select_dtypes(include='object').columns:
+            df[col] = df[col].astype(str).str.replace(r'[\r\n]+', ' ', regex=True).str.strip()
+            df[col] = df[col].replace('nan', pd.NA)
+
         mask_nulos = df[criticas].isna().any(axis=1)
         df_descart = df[mask_nulos]
         df_limpo   = df[~mask_nulos].copy()
