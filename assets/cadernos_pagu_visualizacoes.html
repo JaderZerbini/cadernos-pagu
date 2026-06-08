@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Cadernos Pagu — Análise de Palavras</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=IBM+Plex+Sans:wght@300;400;500&display=swap');
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #FAF8F4;
+    --surface: #FFFFFF;
+    --ink: #1A1612;
+    --ink-muted: #6B6560;
+    --ink-faint: #B5B0AA;
+    --accent: #2C4A7C;
+    --accent2: #7C3B2C;
+    --border: #E8E3DC;
+    --c1: #2C4A7C; --c2: #7C3B2C; --c3: #2C6B52; --c4: #5C2C7C;
+    --c5: #7C5C2C; --c6: #2C5C7C; --c7: #6B2C3B; --c8: #3B5C2C;
+    --c9: #2C3B7C; --c10: #7C2C5C;
+  }
+
+  body {
+    font-family: 'IBM Plex Sans', sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    min-height: 100vh;
+    padding: 3rem 2rem;
+  }
+
+  header {
+    text-align: center;
+    margin-bottom: 3rem;
+    padding-bottom: 2rem;
+    border-bottom: 1px solid var(--border);
+  }
+
+  header h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: 2.2rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    margin-bottom: 0.4rem;
+  }
+
+  header p {
+    font-size: 0.9rem;
+    color: var(--ink-muted);
+    font-weight: 300;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  .stats {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1rem;
+    max-width: 860px;
+    margin: 0 auto 3rem;
+  }
+
+  .stat {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 1rem 1.2rem;
+    text-align: center;
+  }
+
+  .stat-value {
+    font-family: 'Playfair Display', serif;
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--accent);
+    display: block;
+  }
+
+  .stat-label {
+    font-size: 0.72rem;
+    color: var(--ink-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-top: 0.2rem;
+  }
+
+  .section {
+    max-width: 860px;
+    margin: 0 auto 4rem;
+  }
+
+  .section-header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    margin-bottom: 1.5rem;
+  }
+
+  .section-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.3rem;
+    font-weight: 700;
+  }
+
+  .section-note {
+    font-size: 0.78rem;
+    color: var(--ink-muted);
+    font-style: italic;
+  }
+
+  .download-btn {
+    background: var(--ink);
+    color: #fff;
+    border: none;
+    padding: 0.45rem 1.1rem;
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 0.78rem;
+    font-weight: 500;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+
+  .download-btn:hover { background: var(--accent); }
+  .download-btn:active { transform: scale(0.98); }
+
+  .canvas-wrap {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 2rem;
+  }
+
+  svg text { font-family: 'IBM Plex Sans', sans-serif; }
+
+  .bar-chart { width: 100%; }
+
+  .bar-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 7px;
+  }
+
+  .bar-label {
+    font-size: 12.5px;
+    color: var(--ink-muted);
+    width: 180px;
+    text-align: right;
+    flex-shrink: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-weight: 400;
+  }
+
+  .bar-track {
+    flex: 1;
+    height: 18px;
+    background: var(--bg);
+  }
+
+  .bar-fill {
+    height: 100%;
+    transition: width 0.4s ease;
+  }
+
+  .bar-count {
+    font-size: 11px;
+    color: var(--ink-faint);
+    width: 24px;
+    flex-shrink: 0;
+    font-weight: 500;
+  }
+
+  footer {
+    text-align: center;
+    padding-top: 2rem;
+    border-top: 1px solid var(--border);
+    font-size: 0.78rem;
+    color: var(--ink-faint);
+    max-width: 860px;
+    margin: 0 auto;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Cadernos Pagu</h1>
+  <p>Análise bibliométrica · 1993–2008 · 300 artigos</p>
+</header>
+
+<div class="stats">
+  <div class="stat"><span class="stat-value">300</span><span class="stat-label">Artigos</span></div>
+  <div class="stat"><span class="stat-value">244</span><span class="stat-label">Com palavras-chave</span></div>
+  <div class="stat"><span class="stat-value">665</span><span class="stat-label">Termos únicos</span></div>
+  <div class="stat"><span class="stat-value">16</span><span class="stat-label">Anos de publicação</span></div>
+</div>
+
+<!-- WORD CLOUD -->
+<div class="section">
+  <div class="section-header">
+    <h2 class="section-title">Nuvem de palavras-chave</h2>
+    <div style="display:flex;align-items:center;gap:10px;">
+      <span class="section-note">tamanho proporcional à frequência</span>
+      <button class="download-btn" onclick="exportPNG('cloud-wrap','nuvem_palavras_chave.png')">↓ Salvar PNG</button>
+    </div>
+  </div>
+  <div class="canvas-wrap" id="cloud-wrap">
+    <svg id="word-cloud" width="100%" viewBox="0 0 820 400" aria-label="Nuvem de palavras-chave dos artigos do Cadernos Pagu"></svg>
+  </div>
+</div>
+
+<!-- BAR CHART TITLES -->
+<div class="section">
+  <div class="section-header">
+    <h2 class="section-title">Palavras mais frequentes nos títulos</h2>
+    <div style="display:flex;align-items:center;gap:10px;">
+      <span class="section-note">top 25 termos</span>
+      <button class="download-btn" onclick="exportPNG('titles-wrap','palavras_titulos.png')">↓ Salvar PNG</button>
+    </div>
+  </div>
+  <div class="canvas-wrap" id="titles-wrap">
+    <div class="bar-chart" id="title-bars"></div>
+  </div>
+</div>
+
+<footer>Fonte: planilha Cadernos Pagu — Dados Gerais · Gerado com Claude</footer>
+
+<script>
+const kwData = [
+  {w:'gênero',c:89},{w:'sexualidade',c:25},{w:'raça',c:16},{w:'mulheres',c:15},{w:'prostituição',c:12},
+  {w:'corpo',c:11},{w:'feminismo',c:10},{w:'masculinidade',c:10},{w:'literatura',c:8},{w:'relações de gênero',c:8},
+  {w:'tráfico de pessoas',c:8},{w:'família',c:7},{w:'homossexualidade',c:7},{w:'cidadania',c:5},
+  {w:'educação',c:5},{w:'subjetividade',c:5},{w:'identidade',c:5},{w:'parentesco',c:5},
+  {w:'mídia',c:4},{w:'nação',c:4},{w:'século xix',c:4},{w:'memória',c:4},{w:'trabalho doméstico',c:4},
+  {w:'erotismo',c:4},{w:'literatura brasileira',c:4},{w:'maternidade',c:4},{w:'corporalidade',c:4},
+  {w:'moda',c:4},{w:'migração',c:4},{w:'direitos humanos',c:4},{w:'violência',c:3},
+  {w:'identidade nacional',c:3},{w:'religião',c:3},{w:'política',c:3},{w:'história',c:3},{w:'etnografia',c:3}
+];
+
+const titleData = [
+  {w:'gênero',c:68},{w:'mulheres',c:33},{w:'brasil',c:19},{w:'sexo',c:16},{w:'história',c:15},
+  {w:'construção',c:15},{w:'século',c:14},{w:'trabalho',c:14},{w:'feminino',c:13},{w:'feminismo',c:13},
+  {w:'feminina',c:12},{w:'raça',c:12},{w:'mulher',c:11},{w:'social',c:11},{w:'identidade',c:9},
+  {w:'corpo',c:9},{w:'brasileira',c:9},{w:'tráfico',c:8},{w:'imagens',c:7},
+  {w:'prostituição',c:7},{w:'famílias',c:7},{w:'relações',c:7},{w:'representações',c:7},
+  {w:'experiências',c:7},{w:'masculino',c:7}
+];
+
+const palette = ['#2C4A7C','#7C3B2C','#2C6B52','#5C2C7C','#7C5C2C','#2C5C7C','#6B2C3B','#3B5C2C','#2C3B7C','#7C2C5C'];
+
+function drawCloud() {
+  const svg = document.getElementById('word-cloud');
+  const W = 820, H = 400;
+  const maxC = kwData[0].c, minC = 3;
+  const placed = [];
+
+  function sz(c){ return 13 + (c - minC)/(maxC - minC) * 54; }
+  function overlaps(x,y,w,h,pad=4){
+    for(const p of placed)
+      if(x-pad < p.x+p.w && x+w+pad > p.x && y-pad < p.y+p.h && y+h+pad > p.y) return true;
+    return false;
+  }
+
+  const cx = W/2, cy = H/2;
+  kwData.slice(0,36).forEach((d,i) => {
+    const fs = sz(d.c);
+    const tw = d.w.length * fs * 0.58;
+    const th = fs * 1.25;
+    const color = palette[i % palette.length];
+    const fw = i < 3 ? '700' : i < 8 ? '500' : '400';
+
+    for(let r=0; r<300; r++){
+      const angle = r * 2.4 + (i * 0.3);
+      const radius = r * 1.9;
+      const x = cx + radius * Math.cos(angle) - tw/2;
+      const y = cy + radius * Math.sin(angle) - th/2;
+      if(x < 4 || y < 4 || x+tw > W-4 || y+th > H-4) continue;
+      if(!overlaps(x,y,tw,th)){
+        placed.push({x,y,w:tw,h:th});
+        const t = document.createElementNS('http://www.w3.org/2000/svg','text');
+        t.setAttribute('x', x + tw/2);
+        t.setAttribute('y', y + th*0.76);
+        t.setAttribute('text-anchor','middle');
+        t.setAttribute('font-size', fs);
+        t.setAttribute('fill', color);
+        t.setAttribute('font-weight', fw);
+        t.setAttribute('opacity', i < 15 ? '1' : '0.82');
+        t.textContent = d.w;
+        svg.appendChild(t);
+        break;
+      }
+    }
+  });
+}
+
+function drawBars() {
+  const c = document.getElementById('title-bars');
+  const max = titleData[0].c;
+  titleData.slice(0,25).forEach((d,i) => {
+    const pct = (d.c/max*100).toFixed(1);
+    const color = palette[i % palette.length];
+    const row = document.createElement('div');
+    row.className = 'bar-row';
+    row.innerHTML = `
+      <div class="bar-label" title="${d.w}">${d.w}</div>
+      <div class="bar-track"><div class="bar-fill" style="width:${pct}%;background:${color};"></div></div>
+      <div class="bar-count">${d.c}</div>`;
+    c.appendChild(row);
+  });
+}
+
+async function exportPNG(wrapperId, filename) {
+  const el = document.getElementById(wrapperId);
+  const btn = el.parentElement.querySelector('.download-btn');
+  btn.textContent = '…';
+  btn.disabled = true;
+  try {
+    const canvas = await html2canvas(el, {
+      backgroundColor: '#FFFFFF',
+      scale: 2,
+      useCORS: true,
+      logging: false
+    });
+    const link = document.createElement('a');
+    link.download = filename;
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+  } finally {
+    btn.textContent = '↓ Salvar PNG';
+    btn.disabled = false;
+  }
+}
+
+drawCloud();
+drawBars();
+</script>
+</body>
+</html>

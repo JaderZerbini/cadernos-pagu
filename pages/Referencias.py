@@ -5,7 +5,6 @@ import plotly.express as px
 import plotly.graph_objects as go
 from models.references_manager import ReferencesManager, LANG_NAMES, GEO_PARA_PT
 import numpy as np
-
 @st.cache_data(show_spinner=False)
 def carregar_geojson():
     import requests

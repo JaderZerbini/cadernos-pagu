@@ -1,0 +1,203 @@
+
+<h2 class="sr-only">Evolução temática dos artigos do Cadernos Pagu de 1996 a 2008, agrupados em clusters temáticos com frequência normalizada por 10 artigos publicados por ano.</h2>
+
+<div style="display:flex; flex-wrap:wrap; gap:8px; margin-bottom:1.5rem;" id="legend"></div>
+
+<div style="position:relative; width:100%; height:340px;">
+  <canvas id="lineChart" role="img" aria-label="Gráfico de linhas mostrando a evolução de 8 clusters temáticos nos Cadernos Pagu entre 1996 e 2008.">Evolução de temas como gênero e relações, sexualidade e corpo, raça e identidade, feminismo e política, entre outros, de 1996 a 2008.</canvas>
+</div>
+
+<div style="margin-top:1.5rem; padding-top:1rem; border-top:0.5px solid var(--color-border-tertiary);">
+  <p style="font-size:13px; color:var(--color-text-secondary); margin-bottom:1rem;">Selecione um tema para destacar:</p>
+  <div style="display:flex; flex-wrap:wrap; gap:8px;" id="filters"></div>
+</div>
+
+<div style="margin-top:1.5rem; background:var(--color-background-secondary); border-radius:var(--border-radius-md); padding:1rem;" id="insight-box">
+  <p style="font-size:13px; color:var(--color-text-secondary); margin:0;">Clique em um tema acima para ver observações sobre sua trajetória.</p>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script>
+const years = [1996,1997,1998,1999,2000,2001,2002,2003,2004,2005,2006,2007,2008];
+
+const clusters = [
+  {
+    label: 'Gênero & Relações',
+    color: '#185FA5',
+    dash: [],
+    data: [10.0, 2.0, 1.9, 3.33, 6.36, 1.82, 4.21, 7.14, 6.84, 4.5, 6.67, 2.68, 3.53],
+    insight: 'Tema dominante desde o início. Pico em 1996 (fundacional) e retomada forte em 2003–2006, consolidando gênero como categoria central da revista. A alta de 2003 coincide com debates sobre teoria queer e estudos interseccionais no Brasil.'
+  },
+  {
+    label: 'Sexualidade & Corpo',
+    color: '#993C1D',
+    dash: [6,3],
+    data: [1.11, 0.0, 1.9, 1.11, 4.55, 0.91, 1.05, 4.29, 1.58, 2.5, 3.33, 2.2, 0.59],
+    insight: 'Cresce visivelmente a partir de 2000, com picos em 2000 e 2003. Reflete a entrada de estudos sobre corporalidade, erotismo e homossexualidade — temas que ganham espaço acadêmico no contexto pós-AIDS e dos debates sobre identidade sexual nos anos 2000.'
+  },
+  {
+    label: 'Raça & Identidade',
+    color: '#0F6E56',
+    dash: [3,3],
+    data: [12.22, 0.0, 0.48, 0.0, 0.91, 0.0, 1.05, 0.71, 3.68, 0.0, 0.0, 0.98, 0.0],
+    insight: 'Pico extraordinário em 1996: naquele ano, um número temático focou especificamente em raça e gênero. Depois recua significativamente, com leve retomada em 2004 — possivelmente ligada às políticas de cotas e debates sobre identidade racial no Brasil.'
+  },
+  {
+    label: 'Feminismo & Política',
+    color: '#534AB7',
+    dash: [8,3,2,3],
+    data: [2.22, 1.0, 0.95, 2.96, 0.91, 1.82, 0.53, 2.14, 0.0, 0.0, 0.0, 0.24, 1.76],
+    insight: 'Presença constante mas moderada, com pico em 1999. Interessante notar a ausência entre 2004–2006, seguida de retorno em 2008 — pode indicar um ciclo de renovação teórica do feminismo na academia brasileira.'
+  },
+  {
+    label: 'Tráfico & Prostituição',
+    color: '#993556',
+    dash: [4,4],
+    data: [1.11, 0.0, 0.0, 0.0, 0.0, 0.0, 0.53, 0.0, 0.0, 3.0, 0.0, 0.0, 4.71],
+    insight: 'Quase ausente até 2005, depois sobe abruptamente em 2005 e especialmente em 2008. Espelha o crescimento do debate político e legislativo sobre tráfico de pessoas no Brasil — o país ratificou o Protocolo de Palermo em 2004 e aprovou a Lei de Tráfico em 2006.'
+  },
+  {
+    label: 'Família & Maternidade',
+    color: '#3B6D11',
+    dash: [2,4],
+    data: [0.0, 1.0, 0.95, 0.74, 0.0, 0.0, 1.05, 2.86, 0.0, 0.5, 1.33, 1.22, 0.29],
+    insight: 'Tema intermitente, com pico em 2003. Articula-se com debates sobre novas configurações familiares, parentalidade e trabalho doméstico — presentes sobretudo em números temáticos sobre trabalho e vida privada.'
+  },
+  {
+    label: 'Mulheres & Trabalho',
+    color: '#854F0B',
+    dash: [10,3],
+    data: [1.11, 2.0, 0.95, 0.37, 0.0, 0.0, 2.63, 0.71, 0.53, 0.5, 1.33, 0.49, 1.47],
+    insight: 'Frequência relativamente estável ao longo do período. Destaque para 2002, provavelmente ligado a número temático sobre reestruturação produtiva e desigualdades de gênero no trabalho.'
+  },
+  {
+    label: 'Cultura & Mídia',
+    color: '#5C2C7C',
+    dash: [5,2,1,2],
+    data: [2.22, 4.0, 0.95, 1.48, 0.91, 0.0, 0.0, 2.14, 2.63, 0.0, 0.67, 0.98, 0.59],
+    insight: 'Pico em 1997, com boa presença nos anos iniciais. Depois se dispersa. Reflete a entrada de abordagens culturalistas (literatura, mídia, moda) na revista nos anos de consolidação da área de estudos feministas no Brasil.'
+  }
+];
+
+const insights = {};
+clusters.forEach(c => insights[c.label] = c.insight);
+
+let activeCluster = null;
+let chart;
+
+function buildLegend() {
+  const el = document.getElementById('legend');
+  clusters.forEach(c => {
+    const item = document.createElement('span');
+    item.style.cssText = 'display:flex;align-items:center;gap:5px;font-size:12px;color:var(--color-text-secondary);';
+    const sq = document.createElement('span');
+    sq.style.cssText = `width:20px;height:3px;background:${c.color};display:inline-block;flex-shrink:0;`;
+    item.appendChild(sq);
+    item.appendChild(document.createTextNode(c.label));
+    el.appendChild(item);
+  });
+}
+
+function buildFilters() {
+  const el = document.getElementById('filters');
+  clusters.forEach(c => {
+    const btn = document.createElement('button');
+    btn.textContent = c.label;
+    btn.dataset.label = c.label;
+    btn.style.cssText = `font-size:12px;padding:4px 10px;border-radius:var(--border-radius-md);border:0.5px solid var(--color-border-secondary);background:transparent;cursor:pointer;color:var(--color-text-secondary);transition:all 0.15s;`;
+    btn.addEventListener('click', () => toggleCluster(c.label, btn));
+    el.appendChild(btn);
+  });
+}
+
+function toggleCluster(label, btn) {
+  if (activeCluster === label) {
+    activeCluster = null;
+    document.querySelectorAll('#filters button').forEach(b => {
+      b.style.background = 'transparent';
+      b.style.color = 'var(--color-text-secondary)';
+    });
+    document.getElementById('insight-box').innerHTML = '<p style="font-size:13px;color:var(--color-text-secondary);margin:0;">Clique em um tema acima para ver observações sobre sua trajetória.</p>';
+    updateChart(null);
+  } else {
+    activeCluster = label;
+    document.querySelectorAll('#filters button').forEach(b => {
+      const isThis = b.dataset.label === label;
+      const c = clusters.find(x => x.label === b.dataset.label);
+      b.style.background = isThis ? c.color : 'transparent';
+      b.style.color = isThis ? '#fff' : 'var(--color-text-secondary)';
+    });
+    document.getElementById('insight-box').innerHTML = `<p style="font-size:13px;font-weight:500;color:var(--color-text-primary);margin:0 0 4px;">${label}</p><p style="font-size:13px;color:var(--color-text-secondary);margin:0;line-height:1.6;">${insights[label]}</p>`;
+    updateChart(label);
+  }
+}
+
+function updateChart(highlight) {
+  chart.data.datasets.forEach(ds => {
+    if (highlight === null) {
+      ds.borderWidth = 2;
+      ds.borderDash = clusters.find(c => c.label === ds.label).dash;
+      ds.pointRadius = 3;
+      ds.borderColor = clusters.find(c => c.label === ds.label).color;
+    } else if (ds.label === highlight) {
+      ds.borderWidth = 3;
+      ds.borderDash = [];
+      ds.pointRadius = 5;
+      ds.borderColor = clusters.find(c => c.label === ds.label).color;
+    } else {
+      ds.borderWidth = 1;
+      ds.borderDash = [4,4];
+      ds.pointRadius = 2;
+      ds.borderColor = clusters.find(c => c.label === ds.label).color + '44';
+    }
+  });
+  chart.update();
+}
+
+buildLegend();
+buildFilters();
+
+chart = new Chart(document.getElementById('lineChart'), {
+  type: 'line',
+  data: {
+    labels: years,
+    datasets: clusters.map(c => ({
+      label: c.label,
+      data: c.data,
+      borderColor: c.color,
+      backgroundColor: 'transparent',
+      borderWidth: 2,
+      borderDash: c.dash,
+      pointRadius: 3,
+      pointHoverRadius: 5,
+      pointBackgroundColor: c.color,
+      tension: 0.3
+    }))
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    interaction: { mode: 'index', intersect: false },
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        callbacks: {
+          label: ctx => ` ${ctx.dataset.label}: ${ctx.parsed.y.toFixed(1)}`
+        }
+      }
+    },
+    scales: {
+      x: {
+        ticks: { autoSkip: false, maxRotation: 0, font: { size: 12 } },
+        grid: { color: 'rgba(128,128,128,0.1)' }
+      },
+      y: {
+        title: { display: true, text: 'ocorrências por 10 artigos', font: { size: 11 }, color: '#888' },
+        ticks: { font: { size: 11 } },
+        grid: { color: 'rgba(128,128,128,0.1)' },
+        min: 0
+      }
+    }
+  }
+});
+</script>
